@@ -1,0 +1,58 @@
+01 adrar
+02 chlef
+03 laghouat
+04 oum el bouaghi
+05 batna
+06 bejaia
+07 biskra
+08 bechar
+09 blida
+10 bouira
+11 tamanrasset
+12 tebessa
+13 tlemcen
+14 tiaret
+15 tizi ouzou
+16 alger
+17 djelfa
+18 jijel
+19 setif
+20 saida
+21 skikda
+22 sidi bel abbes
+23 annaba
+24 guelma
+25 constantine
+26 medea
+27 mostaganem
+28 msila
+29 mascara
+30 ouargla
+31 oran
+32 el bayadh
+33 illizi
+34 bordj bou arreridj
+35 boumerdes
+36 el tarf
+37 tindouf
+38 tiaret
+39 el oued
+40 khenchela
+41 souk ahras
+42 tipaza
+43 mila
+44 ain defla
+45 naama
+46 ain temouchent
+47 ghardaia
+48 relizane
+49 el menaa
+50 el megheir
+51 ouled djellal
+52 bordj badji mokhtar
+53 beni abbes
+54 timimoun
+55 touggourt
+56 dourah
+57 in salah
+58 in guezzam
