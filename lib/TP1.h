@@ -9,8 +9,8 @@
 // ---- Structs ----
 // record = <wilaya, date, temp> (Weather measurements)
 typedef struct T_rec1 {
-    char *wilaya;
-    char *date;
+    char wilaya[25];
+    char date[11];
     int temp;
 } t_rec1;
 
@@ -37,16 +37,16 @@ typedef struct T_rec2 {
 
 // 1. Weather mesurements
 
+// helper functions
+
 // returns ERR_NONE (0) if date is valid, otherwise it returns the corresponding error number
 int isValidDate(const char *date);
 
 // returns a random integer in interval [low, up]
-int random(int low, int up);
+int randomIn(int low, int up);
 
 // creates a random weather measurements file named fname of size num_recs and returns FILE*
 FILE *createRandomFile(const char *fname, int num_recs);
-
-
 
 
 
