@@ -30,6 +30,7 @@ typedef struct T_rec2 {
 #define ERR_YEAR_RANGE  0x04
 #define ERR_LEAP_DAY    0x08
 #define ERR_FORMAT      0x10
+#define ERR_FUTURE_DATE 0x20
 
 
 // ---- Function prototypes ----
@@ -42,6 +43,8 @@ int isValidDate(const char *date);
 // returns a random integer in interval [low, up]
 int random(int low, int up);
 
+// creates a random weather measurements file named fname of size num_recs and returns FILE*
+FILE *createRandomFile(const char *fname, int num_recs);
 
 
 
