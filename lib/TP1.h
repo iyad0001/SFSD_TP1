@@ -48,7 +48,23 @@ int randomIn(int low, int up);
 // creates a random weather measurements file named fname of size num_recs and returns FILE*
 FILE *createRandomFile(const char *fname, int num_recs);
 
+// creates an empty weather measurements file (returns NULL if file is not found)
+FILE *createEmptyFile(const char *fname);
 
+// opens an existing weather measurements file (returns NULL if file is not found)
+FILE *openExistingFile(const char *fname);
+
+// inserts a weather measurement record at the end of the file
+// must check that buffer buf is valid before function call
+void insert(FILE *f, t_rec1 *buf);
+
+// modifies the temperature of a given wilaya on a given date
+// returns 0 on success, non-zero if record not found
+int modifyTemp(const char *wilaya, const char *date, int temp, FILE *f);
+
+// deletes all records of a given wilaya
+// returns a new FILE* opened on the updated file (or NULL on error)
+FILE *deleteWilaya(const char *wilaya, FILE *f);
 
 
 

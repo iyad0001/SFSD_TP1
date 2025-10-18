@@ -12,7 +12,7 @@ int isValidDate(const char *date) {
     int errors = ERR_NONE;
 
     // Check format first
-    if (sscanf(date, "%02d/%02d/%4d%n", &d, &m, &y, &pos) != 3 || date[pos] != '\0') {
+    if (sscanf(date, "%2d/%2d/%4d%n", &d, &m, &y, &pos) != 3 || date[pos] != '\0') {
         errors |= ERR_FORMAT;
         return errors;  // can't trust values if format is bad
     }
@@ -55,6 +55,11 @@ int isValidDate(const char *date) {
 
 // returns a random integer in interval [low, up]
 int randomIn(int low, int up) {
+    if(up < low) {
+        int tmp = up;
+        up = low;
+        low = tmp;
+    }
     return low + rand() % (up - low + 1);
 }
 
@@ -126,7 +131,7 @@ FILE *createRandomFile(const char *fname, int num_recs) {
             int d = randomIn(1, 31), m = randomIn(1, 12), y = randomIn(system_year-2, system_year);
 
             snprintf(date, sizeof date, "%02d/%02d/%04d", d, m, y); // date = "dd/mm/yyyy"
-        } while(!isValidDate(date)); // regenerate date until it is valid (return value = 0)
+        } while(isValidDate(date) != ERR_NONE); // regenerate date until it is valid (return value = 0)
         strcpy(buffer.date, date); // write generated date in buffer
 
         // finally write buffer in weather measurements file
@@ -136,3 +141,70 @@ FILE *createRandomFile(const char *fname, int num_recs) {
     fclose(fp_wilayas); // close wilayas.txt
     return fp;
 }
+
+// creates an empty weather measurements file (returns NULL if file is not found)
+FILE *createEmptyFile(const char *fname) {
+    return fopen(fname, "wb+");
+}
+
+// opens an existing weather measurements file (returns NULL if file is not found)
+FILE *openExistingFile(const char *fname) {
+    return fopen(fname, "rb+");
+}
+
+// inserts a weather measurement record at the end of the file
+// must check that buffer buf is valid before function call
+void insert(FILE *f, t_rec1 *buf) {
+    // insert at the end of the file
+    fseek(f, 0, SEEK_END); 
+    fwrite(buf, sizeof(t_rec1), 1, f);
+    rewind(f);
+}
+
+// modifies the temperature of a given wilaya on a given date
+int modifyTemp(const char *wilaya, const char *date, int temp, FILE *f) {
+    t_rec1 buf;
+    // read record by record
+    while(fread(&buf, sizeof buf, 1, f) == 1) {
+        // check if the current record is the one searched
+        if(strcmp(buf.wilaya, wilaya) == 0 && strcmp(buf.date, date) == 0) {
+            // modify temperature
+            buf.temp = temp;
+            // write modified buffer
+            fwrite(&buf, sizeof buf, 1, f);
+            rewind(f); // rewind before returning
+            return 0; // record found and modified (success)
+        }
+    }
+    rewind(f);
+    return 1; // record not found the given (wilaya, date) pair doesn't exist in file
+}
+
+// deletes all records of a given wilaya
+FILE *deleteWilaya(const char *wilaya, FILE *f) {
+    // open new file
+    FILE *f_new = fopen("new_temporary_deleted_wilayas_file.bin", "wb+");
+    // check new file
+    if(!f_new) {
+        printf("Error creating temporary file with deleted wilaya!\n");
+        rewind(f);
+        return NULL;
+    }
+    
+    t_rec1 buf; // declare buffer
+    // copy all records except ones which have the deleted wilaya
+    while(fread(&buf, sizeof buf, 1, f) == 1){
+        if(strcmp(buf.wilaya, wilaya) != 0) {
+            fwrite(&buf, sizeof buf, 1, f_new);
+        }
+    } 
+    fclose(f);
+    rename("new_temporary_deleted_wilayas_file.bin", "filename.bin"); // rename new file to old one
+    rewind(f_new);
+    return f_new;
+}
+
+
+
+
+
