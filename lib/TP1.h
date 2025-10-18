@@ -11,7 +11,7 @@
 typedef struct T_rec1 {
     char wilaya[25];
     char date[11];
-    int temp;
+    float temp;
 } t_rec1;
 
 // record = <account, balance> (CCP)
@@ -60,7 +60,7 @@ void insert(FILE *f, t_rec1 *buf);
 
 // modifies the temperature of a given wilaya on a given date
 // returns 0 on success, non-zero if record not found
-int modifyTemp(const char *wilaya, const char *date, int temp, FILE *f);
+int modifyTemp(const char *wilaya, const char *date, float temp, FILE *f);
 
 // deletes all records of a given wilaya
 // returns a new FILE* opened on the updated file (or NULL on error)

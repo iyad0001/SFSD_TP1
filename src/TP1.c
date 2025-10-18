@@ -162,7 +162,7 @@ void insert(FILE *f, t_rec1 *buf) {
 }
 
 // modifies the temperature of a given wilaya on a given date
-int modifyTemp(const char *wilaya, const char *date, int temp, FILE *f) {
+int modifyTemp(const char *wilaya, const char *date, float temp, FILE *f) {
     t_rec1 buf;
     // read record by record
     while(fread(&buf, sizeof buf, 1, f) == 1) {
@@ -212,7 +212,7 @@ void wilayaStats(const char *wilaya, FILE *f) {
 
     // initialize variables
     int wilaya_freq = 0;
-    int min = 100, max = -100, avg = 0;
+    int min = 100.0f, max = -100.0f, avg = 0.0f;
     char wilaya[25], datemin[11], datemax[11];
 
     t_rec1 buf; // declare file buffer
@@ -232,11 +232,10 @@ void wilayaStats(const char *wilaya, FILE *f) {
     }
     avg = avg / wilaya_freq; // compute average temperature
     // finally print min, max, avg and the corresponding dates
-    printf("The minimum temperature of wilaya %s is %d on %s\n", wilaya, min, datemin);
-    printf("The maximum temperature of wilaya %s is %d on %s\n", wilaya, max, datemax);
-    printf("The average temperature of wilaya %s is %d\n", wilaya, avg);
+    printf("The minimum temperature of wilaya %s is %.2f on %s\n", wilaya, min, datemin);
+    printf("The maximum temperature of wilaya %s is %.2f on %s\n", wilaya, max, datemax);
+    printf("The average temperature of wilaya %s is %.2f\n", wilaya, avg);
 }
-
 
 // prints weather mesurements file
 void printFile(FILE *f) {
@@ -246,9 +245,10 @@ void printFile(FILE *f) {
     int count = 1;
     while(fread(&buf, sizeof buf, 1, f) == 1) {
         // print record
-        printf("%d. < wilaya = %s , date = %s , temperature = %d >\n", count++, buf.wilaya, buf.date, buf.temp);
+        printf("%d. < wilaya = %s , date = %s , temperature = %.2f >\n", count++, buf.wilaya, buf.date, buf.temp);
     }
     rewind(f);
 }
+
 
 
