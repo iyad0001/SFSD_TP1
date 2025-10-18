@@ -204,7 +204,51 @@ FILE *deleteWilaya(const char *wilaya, FILE *f) {
     return f_new;
 }
 
+// prints min, max temperatures of a given wilaya with their corresponding dates
+// and prints average temperature of the given wilaya
+void wilayaStats(const char *wilaya, FILE *f) {
+    // position fp to the beginning
+    fseek(f, 0, SEEK_SET);
+
+    // initialize variables
+    int wilaya_freq = 0;
+    int min = 100, max = -100, avg = 0;
+    char wilaya[25], datemin[11], datemax[11];
+
+    t_rec1 buf; // declare file buffer
+
+    while(fread(&buf, sizeof(buf), 1, f) == 1){
+        //
+        if (strcmp(buf.wilaya, wilaya) == 0) {
+            min = (buf.temp < min)? buf.temp : min;
+            max = (buf.temp > max)? buf.temp : max;
+            wilaya_freq++;
+            avg += buf.temp;
+        }
+    }
+    if (wilaya_freq < 1) {
+        printf("There are no records of the wilaya '&s'!\n", wilaya);
+        return;
+    }
+    avg = avg / wilaya_freq; // compute average temperature
+    // finally print min, max, avg and the corresponding dates
+    printf("The minimum temperature of wilaya %s is %d on %s\n", wilaya, min, datemin);
+    printf("The maximum temperature of wilaya %s is %d on %s\n", wilaya, max, datemax);
+    printf("The average temperature of wilaya %s is %d\n", wilaya, avg);
+}
 
 
+// prints weather mesurements file
+void printFile(FILE *f) {
+    // declare buffer
+    t_rec1 buf;
+    // read record by record
+    int count = 1;
+    while(fread(&buf, sizeof buf, 1, f) == 1) {
+        // print record
+        printf("%d. < wilaya = %s , date = %s , temperature = %d >\n", count++, buf.wilaya, buf.date, buf.temp);
+    }
+    rewind(f);
+}
 
 

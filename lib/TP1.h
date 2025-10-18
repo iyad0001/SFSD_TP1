@@ -66,6 +66,16 @@ int modifyTemp(const char *wilaya, const char *date, int temp, FILE *f);
 // returns a new FILE* opened on the updated file (or NULL on error)
 FILE *deleteWilaya(const char *wilaya, FILE *f);
 
+// prints min, max temperatures of a given wilaya with their corresponding dates
+// and prints average temperature of the given wilaya
+void wilayaStats(const char *wilaya, FILE *f);
+
+// prints weather mesurements file
+void printFile(FILE *f);
+
+
+
+
 
 
 #endif
