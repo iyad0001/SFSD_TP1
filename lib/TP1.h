@@ -73,7 +73,11 @@ void wilayaStats(const char *wilaya, FILE *f);
 // prints weather mesurements file
 void printFile(FILE *f);
 
+// encodes a given file using a key of n bytes
+FILE *encode(FILE *f, char *fname_encoded, const char *key, int n);
 
+// decodes a given file using a key of n bytes
+FILE *decode(FILE *f, char *fname_decoded, const char *key, int n);
 
 
 

@@ -250,5 +250,95 @@ void printFile(FILE *f) {
     rewind(f);
 }
 
+// encodes a given file using a key of n bytes
+FILE *encode(FILE *f, char *fname_encoded, const char *key, int n) {
+    // create encoded file (wb+ mode)
+    FILE *f_encoded = fopen(fname_encoded, "wb+");
+    if(!f_encoded) {
+        printf("Error creating file!\n");
+        return NULL;
+    }
+
+    // declare buffer
+    unsigned char buf[n]; // array of n bytes
+    int remaining_bytes; // integer containing leftover bytes after reading file < n
+    while((remaining_bytes = fread(buf, 1, n, f)) == n) {
+        // encode read buffer (encode n bytes)
+        for (int i = 0; i < n; i++)
+        {
+            // if buf[i] is non-printable leave it as it
+            if (buf[i] > 32) {
+                buf[i] += key[i];
+                while(!(buf[i] >= 32 && buf[i] <= 126)) {
+                    buf[i] += 32-127;
+                }
+            }
+        }
+        
+        // write encoded buffer
+        fwrite(buf, 1, n, f_encoded);
+    }
+    // encode remaining bytes
+    for (int i = 0; i < remaining_bytes; i++)
+    {
+        // if buf[i] is non-printable leave it as it
+        if (buf[i] > 32) {
+            buf[i] += key[i];
+            while(!(buf[i] >= 32 && buf[i] <= 126)) {
+                buf[i] += 32-127;
+            }
+        }
+    }
+    // write last buffer
+    fwrite(buf, 1, remaining_bytes, f_encoded);
+    rewind(f);
+    return f_encoded; // finally return a pointer to the encoded file
+}
+ 
+// decodes a given file using a key of n bytes
+FILE *decode(FILE *f, char *fname_decoded, const char *key, int n) {
+    // create decoded file (wb+ mode)
+    FILE *f_decoded = fopen(fname_decoded, "wb+");
+    if(!f_decoded) {
+        printf("Error creating file!\n");
+        return NULL;
+    }
+
+    // declare buffer
+    unsigned char buf[n]; // array of n bytes
+    int remaining_bytes; // integer containing leftover bytes after reading file < n
+    while((remaining_bytes = fread(buf, 1, n, f)) == n) {
+        // decode read buffer (decode n bytes)
+        for (int i = 0; i < n; i++)
+        {
+            // if buf[i] is non-printable leave it as it
+            if (buf[i] > 32) {
+                buf[i] += key[i];
+                while(!(buf[i] >= 32 && buf[i] <= 126)) {
+                    buf[i] += 32-127;
+                }
+            }
+        }
+        
+        // write decoded buffer
+        fwrite(buf, 1, n, f_decoded);
+    }
+    // decode remaining bytes
+    for (int i = 0; i < remaining_bytes; i++)
+    {
+        // if buf[i] is non-printable leave it as it
+        if (buf[i] > 32) {
+            buf[i] += key[i];
+            while(!(buf[i] >= 32 && buf[i] <= 126)) {
+                buf[i] += -32+127;
+            }
+        }
+    }
+    // write last buffer
+    fwrite(buf, 1, remaining_bytes, f_decoded);
+    rewind(f);
+    return f_decoded; // finally return a file pointer to the decoded file
+}
+ 
 
 
