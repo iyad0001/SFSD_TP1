@@ -1,0 +1,42 @@
+Main Menu
+    1. Temperature measurements
+    2. CCP Transfers
+    3. Exit
+
+    Menu 1
+        // Variables:
+        // char filename[50], filename_encoded[50], filename_decoded[50];
+        // FILE *f, *f_encoded, *f_decoded;
+
+        1. Create/Open file
+        2. Print file
+        3. Functions on measurements
+        4. Encode/Decode measurements file
+        5. Return to main menu
+
+        Menu 1.1
+            1. Create empty file     // printf("Enter the name of the file you want to create: "); scanf("%s", filename);
+            2. Create file randomly  // printf("Enter the name of the file you want to randomly create: "); scanf("%s", filename);
+            3. Open existing file    // printf("Enter the path of the file you want to Open: "); scanf("%s", filename);
+            4. Quit
+
+        Menu 1.2
+            call printFile(f)
+            
+        Menu 1.3
+            // Variables:
+            // int wilaya_num;
+            // char date[11];
+
+            1. Insert a measurement                 // read buffer: wilaya_num + date (must be valid) + temperature  
+            2. Modify a measurement temperature     // wilaya_num + date (must be valid) + new temperature
+            3. Display stats of a wilaya            // wilaya_num
+            4. Quit
+
+        Menu 1.4
+            1. Encode file  // printf("Enter the name of the output file (encoded file): "); scanf("%s", filename_encoded);
+            2. Decode file  // printf("Enter the name of the output file (decoded file): "); scanf("%s", filename_decoded);
+            3. Quit
+    END Menu 1
+
+

@@ -45,6 +45,9 @@ int isValidDate(const char *date);
 // returns a random integer in interval [low, up]
 int randomIn(int low, int up);
 
+// gets wilaya name given its number
+char *getWilayaName(int wilaya_num);
+
 // creates a random weather measurements file named fname of size num_recs and returns FILE*
 FILE *createRandomFile(const char *fname, int num_recs);
 
@@ -79,6 +82,13 @@ FILE *encode(FILE *f, char *fname_encoded, const char *key, int n);
 // decodes a given file using a key of n bytes
 FILE *decode(FILE *f, char *fname_decoded, const char *key, int n);
 
+/* --- Menu Functions --- */
+
+// main menu function
+void mainMenu();
+
+// prints temperature measurements menu
+void menu1();
 
 
 

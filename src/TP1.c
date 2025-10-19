@@ -63,6 +63,36 @@ int randomIn(int low, int up) {
     return low + rand() % (up - low + 1);
 }
 
+// gets wilaya name given its number
+char *getWilayaName(int wilaya_num) {
+    char wilaya_name[25]; // returned string
+
+    // open wilayas.txt
+    FILE *fp_wilayas = fopen("wilayas.txt", "r"); // open wilayas.txt file
+    if(!fp_wilayas) {
+        printf("Error opening wilayas.txt!\n");
+        return;
+    }
+
+    char line_wilaya[255]; // buffer to store each line from wilayas.txt
+
+    // search for the name of the given wilaya in wilayas.txt
+    while(fgets(line_wilaya, sizeof(line_wilaya), fp_wilayas)) {
+        
+        int num; // number of wilaya at current line
+        // parse line_wilaya to wilaya_num and wilaya_name
+        sscanf(line_wilaya, "%2d %20[^\n]", &num, wilaya_name);
+        
+        if(num == wilaya_num) { 
+            // target wilaya reached
+            break;
+        }
+    }
+    rewind(fp_wilayas);
+    fclose(fp_wilayas);
+    return wilaya_name;
+}
+
 // creates a random weather measurements file named fname of size num_recs
 FILE *createRandomFile(const char *fname, int num_recs) {
 
@@ -154,6 +184,7 @@ FILE *openExistingFile(const char *fname) {
 
 // inserts a weather measurement record at the end of the file
 // must check that buffer buf is valid before function call
+// assumes file is open
 void insert(FILE *f, t_rec1 *buf) {
     // insert at the end of the file
     fseek(f, 0, SEEK_END); 
@@ -162,6 +193,7 @@ void insert(FILE *f, t_rec1 *buf) {
 }
 
 // modifies the temperature of a given wilaya on a given date
+// assumes file is open
 int modifyTemp(const char *wilaya, const char *date, float temp, FILE *f) {
     t_rec1 buf;
     // read record by record
@@ -181,6 +213,7 @@ int modifyTemp(const char *wilaya, const char *date, float temp, FILE *f) {
 }
 
 // deletes all records of a given wilaya
+// assumes file is open
 FILE *deleteWilaya(const char *wilaya, FILE *f) {
     // open new file
     FILE *f_new = fopen("new_temporary_deleted_wilayas_file.bin", "wb+");
@@ -204,8 +237,8 @@ FILE *deleteWilaya(const char *wilaya, FILE *f) {
     return f_new;
 }
 
-// prints min, max temperatures of a given wilaya with their corresponding dates
-// and prints average temperature of the given wilaya
+// prints min, max temperatures of a given wilaya with their corresponding dates and avg temp
+// assumes file is open
 void wilayaStats(const char *wilaya, FILE *f) {
     // position fp to the beginning
     fseek(f, 0, SEEK_SET);
@@ -238,7 +271,9 @@ void wilayaStats(const char *wilaya, FILE *f) {
 }
 
 // prints weather mesurements file
+// assumes file is open
 void printFile(FILE *f) {
+    printf("Printing file...\n");
     // declare buffer
     t_rec1 buf;
     // read record by record
@@ -247,10 +282,12 @@ void printFile(FILE *f) {
         // print record
         printf("%d. < wilaya = %s , date = %s , temperature = %.2f >\n", count++, buf.wilaya, buf.date, buf.temp);
     }
+    printf("\n");
     rewind(f);
 }
 
 // encodes a given file using a key of n bytes
+// assumes file is open
 FILE *encode(FILE *f, char *fname_encoded, const char *key, int n) {
     // create encoded file (wb+ mode)
     FILE *f_encoded = fopen(fname_encoded, "wb+");
@@ -296,6 +333,7 @@ FILE *encode(FILE *f, char *fname_encoded, const char *key, int n) {
 }
  
 // decodes a given file using a key of n bytes
+// assumes file is open
 FILE *decode(FILE *f, char *fname_decoded, const char *key, int n) {
     // create decoded file (wb+ mode)
     FILE *f_decoded = fopen(fname_decoded, "wb+");
@@ -340,5 +378,55 @@ FILE *decode(FILE *f, char *fname_decoded, const char *key, int n) {
     return f_decoded; // finally return a file pointer to the decoded file
 }
  
+// main menu function
+void mainMenu() {
+    int choice;
+    do {
+        // print main menu
+        printf("\n<===============  Main Menu  ===============>\n");
+        printf("\t1. Temperature measurements\n");
+        printf("\t2. CCP transfers management\n");
+        printf("\t3. Exit\n");
 
+        // read choice
+        printf("Enter choice: ");
+        scanf("%d", &choice);
+        switch(choice) {
+            case 1: menu1(); break;
+            case 2: menu2(); break;
+            case 3: printf("Exiting...\n"); break;
+            default: printf("Invalid choice!\n");
+        }
 
+    } while(choice != 3);
+}
+
+// prints temperature measurements menu
+void menu1() {
+    int choice;
+    do
+    {
+        // print temperature measurements menu
+        printf("\n<===============  Temperature Measurements  ===============>\n");
+        printf("\t1. Create/Open file\n");
+        printf("\t2. Functions on measurements\n");
+        printf("\t3. Encode/Decode measurements file\n");
+        printf("\t5. Back to main menu\n");
+
+        // read choice
+        printf("Enter choice: ");
+        scanf("%d", &choice);
+        switch(choice) {
+            case 1: menu1_1(); break;
+            case 2: menu1_2(); break;
+            case 3: menu1_3(); break;
+            case 4: menu1_4(); break;
+            case 5: printf("Returning to main menu...\n"); break;
+            default: printf("Invalid choice!\n");
+        }
+    } while (choice != 5);
+}
+
+void menu1_1() {
+
+}
