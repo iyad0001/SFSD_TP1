@@ -67,7 +67,7 @@ int modifyTemp(const char *wilaya, const char *date, float temp, FILE *f);
 
 // deletes all records of a given wilaya
 // returns a new FILE* opened on the updated file (or NULL on error)
-FILE *deleteWilaya(const char *wilaya, FILE *f);
+FILE *deleteWilaya(const char *wilaya, FILE *f, char *filename);
 
 // prints min, max temperatures of a given wilaya with their corresponding dates
 // and prints average temperature of the given wilaya
@@ -91,13 +91,13 @@ void mainMenu();
 void menu1();
 
 // Create/open file menu
-void menu1_1(char **filename, FILE **f);
+void menu1_1(char *filename, FILE **f);
 
 // Functions on file (insert, modify, delete, stats)
 void menu1_3(FILE **f);
 
 // Encode/Decode file
-void menu1_4(FILE **f, char **filename_encoded, char **filename_decoded, char **f_encoded, char **f_decoded);
+void menu1_4(FILE **f, char *filename_encoded, char *filename_decoded, FILE **f_encoded, FILE **f_decoded);
 
 
 
