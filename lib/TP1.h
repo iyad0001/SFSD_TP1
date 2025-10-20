@@ -59,7 +59,7 @@ FILE *openExistingFile(const char *fname);
 
 // inserts a weather measurement record at the end of the file
 // must check that buffer buf is valid before function call
-void insert(FILE *f, t_rec1 *buf);
+void insert(FILE *f, t_rec1 buf);
 
 // modifies the temperature of a given wilaya on a given date
 // returns 0 on success, non-zero if record not found
@@ -89,6 +89,16 @@ void mainMenu();
 
 // prints temperature measurements menu
 void menu1();
+
+// Create/open file menu
+void menu1_1(char **filename, FILE **f);
+
+// Functions on file (insert, modify, delete, stats)
+void menu1_3(FILE **f);
+
+// Encode/Decode file
+void menu1_4(FILE **f, char **filename_encoded, char **filename_decoded, char **f_encoded, char **f_decoded);
+
 
 
 

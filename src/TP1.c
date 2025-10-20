@@ -185,14 +185,15 @@ FILE *openExistingFile(const char *fname) {
 // inserts a weather measurement record at the end of the file
 // must check that buffer buf is valid before function call
 // assumes file is open
-void insert(FILE *f, t_rec1 *buf) {
+void insert(FILE *f, t_rec1 buf) {
     // insert at the end of the file
     fseek(f, 0, SEEK_END); 
-    fwrite(buf, sizeof(t_rec1), 1, f);
+    fwrite(&buf, sizeof(t_rec1), 1, f);
     rewind(f);
 }
 
 // modifies the temperature of a given wilaya on a given date
+// returns 0 if record is found and modified (success), 1 if record wasn't found
 // assumes file is open
 int modifyTemp(const char *wilaya, const char *date, float temp, FILE *f) {
     t_rec1 buf;
@@ -404,6 +405,9 @@ void mainMenu() {
 // prints temperature measurements menu
 void menu1() {
     int choice;
+    // declare variables for this menu and its children menus
+    char filename[50], filename_encoded[50], filename_decoded[50];
+    FILE *f, *f_encoded, *f_decoded;
     do
     {
         // print temperature measurements menu
@@ -417,16 +421,244 @@ void menu1() {
         printf("Enter choice: ");
         scanf("%d", &choice);
         switch(choice) {
-            case 1: menu1_1(); break;
-            case 2: menu1_2(); break;
-            case 3: menu1_3(); break;
-            case 4: menu1_4(); break;
+            case 1: menu1_1(&filename, &f); break;
+            case 2: printFile(f); break;
+            case 3: menu1_3(&f); break;
+            case 4: menu1_4(&f, &filename_encoded, &filename_decoded, &f_encoded, &f_decoded); break;
             case 5: printf("Returning to main menu...\n"); break;
             default: printf("Invalid choice!\n");
         }
     } while (choice != 5);
 }
 
-void menu1_1() {
+// Create/open file menu
+void menu1_1(char **filename, FILE **f) {
+    int choice;
+    do
+    {
+        // print temperature measurements menu
+        printf("\n<===============  Create/Open file  ===============>\n");
+        printf("\t1. Create empty measurements file\n");
+        printf("\t2. Create file randomly\n");
+        printf("\t3. Open existing file\n");
+        printf("\t4. Back to main menu\n");
 
+        // read choice
+        printf("Enter choice: ");
+        scanf("%d", &choice);
+        switch(choice) {
+            case 1: // create empty file
+
+                /* [] validate filename with function + loop */
+
+                printf("Enter the name of the file you want to create: "); 
+                scanf("%s", *filename);
+                // create empty file
+                *f = createEmptyFile(*filename);
+                break;
+
+            case 2: // create random file
+                // read filename
+                printf("Enter the name of the file you want to create: "); 
+                scanf("%s", *filename);
+
+                // read the number of records
+                printf("Enter the number of measurements: "); 
+                int num_recs;
+                scanf("%d", &num_recs);
+
+                // create random file
+                *f = createRandomFile(*filename, num_recs);
+                break;
+
+            case 3: // open existing file
+                // read filename
+                printf("Enter the name of the file you want to open (file path): "); 
+                scanf("%s", *filename);
+                // open file
+                *f = openExistingFile(*filename);
+                break;
+
+            case 4: printf("Returning to previous menu...\n"); break;
+            default: printf("Invalid choice!\n");
+        }
+    } while (choice != 4);
 }
+
+// Functions on file (insert, modify, delete, stats)
+void menu1_3(FILE **f) {
+    int choice;
+    do {
+        // print main menu
+        printf("\n<===============  Function on measurements file  ===============>\n");
+        printf("\t1. Insert a measurement\n");
+        printf("\t2. Modify a measurement temperature\n");
+        printf("\t3. Display measurement stats of a wilaya\n");
+        printf("\t4. Quit\n");
+
+        // read choice
+        printf("Enter choice: ");
+        scanf("%d", &choice);
+        switch(choice) {
+            case 1: // insert a measurement
+            // first: read record to insert
+            int wilaya_num;
+            char date[11];
+            float temp;
+            t_rec1 buffer;
+            
+            do {
+                // read wilaya
+                printf("Enter wilaya number (1-58): ");
+                scanf("%d", &wilaya_num);
+                // read date
+                printf("Enter a valid date: ");
+                scanf("%s", date);
+                // read temperature
+                printf("Enter temperature: ");
+                scanf("%f", &temp);
+                printf("\n");
+            } while(!((wilaya_num >= 1 && wilaya_num <= 58) && (isValidDate(date) == ERR_NONE) && (temp >= -90 && temp <= 60)));
+
+            // fill record
+            strcpy(buffer.wilaya, getWilayaName(wilaya_num));
+            strcpy(buffer.date, date);
+            buffer.temp = temp;
+
+            // function call
+            insert(*f, buffer);
+            break;
+
+            case 2: // modify measurement temperature
+                int wilaya_num;
+                char date[11];
+                float temp;
+
+                int measurement_found;
+                int isMeasurementValid;
+                do {
+                    // read wilaya
+                    printf("Enter wilaya number (1-58): ");
+                    scanf("%d", &wilaya_num);
+                    // read date
+                    printf("Enter a valid date: ");
+                    scanf("%s", date);
+                    // read temperature
+                    printf("Enter temperature: ");
+                    scanf("%f", &temp);
+                    printf("\n");
+
+                    isMeasurementValid = ((wilaya_num >= 1 && wilaya_num <= 58) && (isValidDate(date) == ERR_NONE) && (temp >= -90 && temp <= 60));
+                    if (!isMeasurementValid)
+                        continue;
+                    
+                    measurement_found = modifyTemp(getWilayaName(wilaya_num), date, temp, *f);
+                    if(measurement_found == 1) printf("Measurement with wilaya &d and date &s NOT found!\n", wilaya_num, date);
+                    else printf("Measurement with wilaya &d and date &s was set to %f\n", wilaya_num, date, temp);
+                } while(isMeasurementValid);
+                break;
+                
+            case 3: // display wilaya stats
+                // read wilaya_num
+                int wilaya_num;
+                do
+                {
+                    printf("Enter wilaya number (1-58): ");
+                    scanf("%d", &wilaya_num);                    
+                } while (wilaya_num >= 1 && wilaya_num <= 58);
+
+                wilayaStats(getWilayaName(wilaya_num), *f);
+                break;
+
+            case 4: printf("Returning to previous menu...\n"); break;
+            default: printf("Invalid choice!\n");
+        }
+    } while(choice != 3);
+}
+
+// Encode/Decode file
+void menu1_4(FILE **f, char **filename_encoded, char **filename_decoded, char **f_encoded, char **f_decoded) {
+    int choice;
+    do {
+        // print menu
+        printf("\n<===============  Encode/Decode file  ===============>\n");
+        printf("\t1. Encode file\n");
+        printf("\t2. Decode file\n");
+        printf("\t3. Quit\n");
+
+        // read choice
+        printf("Enter choice: ");
+        scanf("%d", &choice);
+
+        // declare key and its lenght n
+        int n;
+        char key[n];
+        int haveRead = 0;
+        char read_again;
+
+        switch(choice) {
+            case 1: 
+                // read output file name
+                printf("Enter the name of the output file (encoded file): "); 
+                scanf("%s", *filename_encoded);
+
+                // read n and key
+                if(haveRead != 0) {
+                    printf("keep last read (key,n) pair or read again?\n");
+                    printf("choice (y/n): ");
+                    scanf("%c", read_again);
+
+                    if(read_again == 'y' || read_again == 'Y') {
+                        printf("Enter key lenght 'n': ");
+                        scanf("%d", &n);
+                        printf("Enter key: ");
+                        scanf("%s", key);
+                    }
+                } else {
+                    printf("Enter key lenght 'n': ");
+                    scanf("%d", &n);
+                    printf("Enter key: ");
+                    scanf("%s", key);
+                    haveRead = 1;
+                }
+
+                *f_encoded = encode(*f, *f_encoded, key, n);
+                printf("File successfully encoded\n");
+
+            case 2: 
+                // read output file name
+                printf("Enter the name of the output file (decoded file): "); 
+                scanf("%s", *filename_decoded);
+
+                // read n and key
+                if(haveRead != 0) {
+                    printf("keep last read (key,n) pair or read again?\n");
+                    printf("choice (y/n): ");
+                    scanf("%c", read_again);
+
+                    if(read_again == 'y' || read_again == 'Y') {
+                        printf("Enter key lenght 'n': ");
+                        scanf("%d", &n);
+                        printf("Enter key: ");
+                        scanf("%s", key);
+                    }
+                } else {
+                    printf("Enter key lenght 'n': ");
+                    scanf("%d", &n);
+                    printf("Enter key: ");
+                    scanf("%s", key);
+                    haveRead = 1;
+                }
+
+                *f_decoded = decode(*f, *f_decoded, key, n);
+                printf("File successfully decoded\n");
+
+            case 3: printf("Returning to previous menu...\n"); break;
+            default: printf("Invalid choice!\n");
+        }
+
+    } while(choice != 3);
+}
+
+
+
