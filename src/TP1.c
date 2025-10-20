@@ -502,7 +502,7 @@ void menu1_3(FILE **f) {
     int choice;
     do {
         // print main menu
-        printf("\n<===============  Function on measurements file  ===============>\n");
+        printf("\n<===============  Functions on measurements file  ===============>\n");
         printf("\t1. Insert a measurement\n");
         printf("\t2. Modify a measurement temperature\n");
         printf("\t3. Display measurement stats of a wilaya\n");
@@ -574,7 +574,7 @@ void menu1_3(FILE **f) {
                 {
                     printf("Enter wilaya number (1-58): ");
                     scanf("%d", &wilaya_num);                    
-                } while (wilaya_num >= 1 && wilaya_num <= 58);
+                } while (!(wilaya_num >= 1 && wilaya_num <= 58));
 
                 wilayaStats(getWilayaName(wilaya_num), *f);
                 break;
