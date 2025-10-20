@@ -71,7 +71,7 @@ char *getWilayaName(int wilaya_num) {
     FILE *fp_wilayas = fopen("wilayas.txt", "r"); // open wilayas.txt file
     if(!fp_wilayas) {
         printf("Error opening wilayas.txt!\n");
-        return;
+        return NULL;
     }
 
     char line_wilaya[255]; // buffer to store each line from wilayas.txt
@@ -246,8 +246,8 @@ void wilayaStats(const char *wilaya, FILE *f) {
 
     // initialize variables
     int wilaya_freq = 0;
-    int min = 100.0f, max = -100.0f, avg = 0.0f;
-    char wilaya[25], datemin[11], datemax[11];
+    float min = 100.0f, max = -100.0f, avg = 0.0f;
+    char datemin[11], datemax[11];
 
     t_rec1 buf; // declare file buffer
 
@@ -261,7 +261,7 @@ void wilayaStats(const char *wilaya, FILE *f) {
         }
     }
     if (wilaya_freq < 1) {
-        printf("There are no records of the wilaya '&s'!\n", wilaya);
+        printf("There are no records of the wilaya %s!\n", wilaya);
         return;
     }
     avg = avg / wilaya_freq; // compute average temperature
@@ -394,7 +394,7 @@ void mainMenu() {
         scanf("%d", &choice);
         switch(choice) {
             case 1: menu1(); break;
-            case 2: menu2(); break;
+            // case 2: menu2(); break;
             case 3: printf("Exiting...\n"); break;
             default: printf("Invalid choice!\n");
         }
@@ -421,10 +421,10 @@ void menu1() {
         printf("Enter choice: ");
         scanf("%d", &choice);
         switch(choice) {
-            case 1: menu1_1(&filename, &f); break;
+            case 1: menu1_1(filename, &f); break;
             case 2: printFile(f); break;
             case 3: menu1_3(&f); break;
-            case 4: menu1_4(&f, &filename_encoded, &filename_decoded, &f_encoded, &f_decoded); break;
+            case 4: menu1_4(&f, filename_encoded, filename_decoded, &f_encoded, &f_decoded); break;
             case 5: printf("Returning to main menu...\n"); break;
             default: printf("Invalid choice!\n");
         }
@@ -432,7 +432,7 @@ void menu1() {
 }
 
 // Create/open file menu
-void menu1_1(char **filename, FILE **f) {
+void menu1_1(char *filename, FILE **f) {
     int choice;
     do
     {
@@ -452,15 +452,15 @@ void menu1_1(char **filename, FILE **f) {
                 /* [] validate filename with function + loop */
 
                 printf("Enter the name of the file you want to create: "); 
-                scanf("%s", *filename);
+                scanf("%s", filename);
                 // create empty file
-                *f = createEmptyFile(*filename);
+                *f = createEmptyFile(filename);
                 break;
 
             case 2: // create random file
                 // read filename
                 printf("Enter the name of the file you want to create: "); 
-                scanf("%s", *filename);
+                scanf("%s", filename);
 
                 // read the number of records
                 printf("Enter the number of measurements: "); 
@@ -468,15 +468,15 @@ void menu1_1(char **filename, FILE **f) {
                 scanf("%d", &num_recs);
 
                 // create random file
-                *f = createRandomFile(*filename, num_recs);
+                *f = createRandomFile(filename, num_recs);
                 break;
 
             case 3: // open existing file
                 // read filename
                 printf("Enter the name of the file you want to open (file path): "); 
-                scanf("%s", *filename);
+                scanf("%s", filename);
                 // open file
-                *f = openExistingFile(*filename);
+                *f = openExistingFile(filename);
                 break;
 
             case 4: printf("Returning to previous menu...\n"); break;
@@ -500,12 +500,12 @@ void menu1_3(FILE **f) {
         printf("Enter choice: ");
         scanf("%d", &choice);
         switch(choice) {
-            case 1: // insert a measurement
-            // first: read record to insert
             int wilaya_num;
             char date[11];
             float temp;
             t_rec1 buffer;
+            case 1: // insert a measurement
+            // first: read record to insert
             
             do {
                 // read wilaya
@@ -530,9 +530,6 @@ void menu1_3(FILE **f) {
             break;
 
             case 2: // modify measurement temperature
-                int wilaya_num;
-                char date[11];
-                float temp;
 
                 int measurement_found;
                 int isMeasurementValid;
@@ -577,7 +574,7 @@ void menu1_3(FILE **f) {
 }
 
 // Encode/Decode file
-void menu1_4(FILE **f, char **filename_encoded, char **filename_decoded, char **f_encoded, char **f_decoded) {
+void menu1_4(FILE **f, char *filename_encoded, char *filename_decoded, FILE **f_encoded, FILE **f_decoded) {
     int choice;
     do {
         // print menu
@@ -606,7 +603,7 @@ void menu1_4(FILE **f, char **filename_encoded, char **filename_decoded, char **
                 if(haveRead != 0) {
                     printf("keep last read (key,n) pair or read again?\n");
                     printf("choice (y/n): ");
-                    scanf("%c", read_again);
+                    scanf("%c", &read_again);
 
                     if(read_again == 'y' || read_again == 'Y') {
                         printf("Enter key lenght 'n': ");
