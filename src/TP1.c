@@ -292,7 +292,7 @@ void printFile(FILE *f) {
     int count = 1;
     while(fread(&buf, sizeof buf, 1, f) == 1) {
         // print record
-        printf("%d. < wilaya = %s , date = %s , temperature = %.2f >\n", count++, buf.wilaya, buf.date, buf.temp);
+        printf("%d. < wilaya = %s , \t\t\tdate = %s , \ttemperature = %.2f >\n", count++, buf.wilaya, buf.date, buf.temp);
     }
     printf("\n");
     rewind(f);
@@ -670,4 +670,5 @@ void menu1_4(FILE **f, char *filename_encoded, char *filename_decoded, FILE **f_
 
     } while(choice != 3);
 }
+
 
