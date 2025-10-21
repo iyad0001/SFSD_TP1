@@ -1,8 +1,7 @@
-#include "lib/TP1.h"
-#include <stdio.h>
+#include "TP1.h"
 
 int main(void) {
-    // randomize seed to ensure any numbers generated randomly in this program are actually random
+    // randomize seed
     srand(time(NULL));
     
     mainMenu();
