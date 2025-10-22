@@ -482,7 +482,7 @@ void mainMenu() {
         }
         switch(choice) {
             case 1: menu1(); break;
-            // case 2: menu2(); break;
+            case 2: menu2(); break;
             case 3: printf("Exiting...\n"); break;
             default: printf("Invalid choice!\n");
         }
@@ -792,7 +792,6 @@ void menu1_4(FILE **f, char *filename_encoded, char *filename_decoded, FILE **f_
 }
 
 
-
 /*  MENU 2 Functions : */
 //----------------------//
 
@@ -846,7 +845,6 @@ int search_transfer(FILE *file2, int ccp_number) {
     }
 }
 
-
 FILE* create_random_file2(char *file_name, int number_of_transfers, int min_ccp_number, int number_of_accounts) {
     if (!file_name) return NULL;
     FILE* f = fopen(file_name, "w+");
@@ -864,7 +862,6 @@ FILE* create_random_file2(char *file_name, int number_of_transfers, int min_ccp_
     rewind(f);
     return f;
 }
-
 
 void insert_account(FILE *file1, int ccp_number, int balance) {
     if (!file1) return;
@@ -891,11 +888,6 @@ void insert_transfer(FILE *file1, FILE *file2, int ccp_number, int balance) {
     }
 }
 
-/*
- update:
- For each transfer line in file2 (text), find matching account in binary file1,
- add the transfer amount to the account balance and write it back.
-*/
 void update (FILE* file1, FILE* file2) {
     if (!file1 || !file2) return;
 
@@ -952,11 +944,14 @@ int printfile_transfers (FILE *file2) {
         return 0;
 }
 
-/* Top-level menu2: uses FILE* local vars and passes by address to submenus */
 void menu2 () {
-    FILE* file1=NULL,*file2=NULL;
-    char file1name[50], file1name_encoded[50], file1name_decoded[50];
-    char file2name[50], file2name_encoded[50], file2name_decoded[50];
+    FILE* file1 = NULL;
+    FILE* file2 = NULL;
+    FILE* f_encoded = NULL;
+    FILE* f_decoded = NULL;
+    char file1name[260] = {0}, file2name[260] = {0};
+    char file1name_encoded[260] = {0}, file1name_decoded[260] = {0};
+    char file2name_encoded[260] = {0}, file2name_decoded[260] = {0};
     int choice = -1;
 
     do {
@@ -965,7 +960,7 @@ void menu2 () {
         printf("  |                 2. Print file                          |\n");
         printf("  |                 3. Insert                              |\n");
         printf("  |                 4. Update                              |\n");
-        printf("  |                 5. Encode/Decode file (not implemented) |\n");
+        printf("  |                 5. Encode/Decode file                  |\n");
         printf("  |                 6. Back to main menu                   |\n");
         printf("  ==========================================================\n");
 
@@ -980,12 +975,34 @@ void menu2 () {
             case 2: menu2_2(&file1, &file2); break;
             case 3: menu2_3(&file1, &file2); break;
             case 4: update(file1, file2); break;
-            case 5: printf("Encode/Decode not implemented for menu2.\n"); break;
+            case 5: {
+                // ask which of the two files to encode/decode
+                int which = 0;
+                printf("Encode/Decode which file? 1=accounts (binary)  2=transfers (text)\n --> ");
+                if (scanf("%d", &which) != 1) {
+                    int c; while ((c = getchar()) != EOF && c != '\n');
+                    break;
+                }
+                if (which == 1) {
+                    menu1_4(&file1, file1name_encoded, file1name_decoded, &f_encoded, &f_decoded);
+                } else if (which == 2) {
+                    menu1_4(&file2, file2name_encoded, file2name_decoded, &f_encoded, &f_decoded);
+                } else {
+                    printf("Invalid selection.\n");
+                }
+                break;
+            }
             case 6: printf("Returning to main menu...\n"); break;
             default: printf("Invalid choice!\n"); break;
         }
-        choice = -1;
+        // loop continues until user chooses 6
     } while (choice != 6);
+
+    // close any files left open by this menu
+    if (file1) { fclose(file1); file1 = NULL; }
+    if (file2) { fclose(file2); file2 = NULL; }
+    if (f_encoded) { fclose(f_encoded); f_encoded = NULL; }
+    if (f_decoded) { fclose(f_decoded); f_decoded = NULL; }
 }
 
 void menu2_3 (FILE** file1, FILE** file2) {
