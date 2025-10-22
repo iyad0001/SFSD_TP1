@@ -14,6 +14,12 @@ typedef struct T_rec1 {
     float temp;
 } t_rec1;
 
+// record = <ccp account, balance>
+typedef struct Ccp {
+    int ccp_number;
+    int balance;
+} CCP;
+
 // record = <account, balance> (CCP)
 typedef struct T_rec2 {
     int account;
@@ -99,7 +105,34 @@ void menu1_3(FILE **f);
 // Encode/Decode file
 void menu1_4(FILE **f, char *filename_encoded, char *filename_decoded, FILE **f_encoded, FILE **f_decoded);
 
+/* --- CCP (MENU 2) --- */
 
+// create CCP accounts binary file with consecutive ccp numbers starting at min_ccp_number
+FILE* create_random_file1(char *file_name_1, int number_of_accounts , int min_ccp_number );
 
+// search a CCP account in accounts binary file (returns 1 if found, 0 otherwise)
+int search_ccp(FILE *file1, int ccp_number);
+
+// create transfers text file with random transfers (each line: "<ccp_number> <amount>\n")
+FILE* create_random_file2(char *file_name, int number_of_transfers, int min_ccp_number, int number_of_accounts);
+
+// insert a transfer line into transfers file (text)
+void insert_transfer(FILE *file1, FILE *file2, int ccp_number, int balance);
+
+// insert an account (binary) if not present
+void insert_account(FILE *file1, int ccp_number, int balance);
+
+// apply transfers from transfers file to accounts file (update balances)
+void update (FILE *file1, FILE *file2);
+
+// menus for CCP management - pass file pointers by address so menu can open/close files
+void menu2 ();
+void menu2_1(FILE **file1, FILE **file2) ;
+void menu2_2(FILE **file1, FILE **file2);
+void menu2_3 (FILE **file1, FILE **file2);
+
+int printfile_CCP (FILE *file1);
+int printfile_transfers(FILE *file2);
+int search_transfer(FILE *file2, int ccp_number);
 
 #endif

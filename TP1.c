@@ -792,3 +792,359 @@ void menu1_4(FILE **f, char *filename_encoded, char *filename_decoded, FILE **f_
 }
 
 
+
+/*  MENU 2 Functions : */
+//----------------------//
+
+FILE* create_random_file1(char *file_name_1, int number_of_accounts , int min_ccp_number ) {
+    if (!file_name_1) return NULL;
+    FILE *f = fopen(file_name_1, "wb+");
+    if (!f) return NULL;
+
+    CCP temp;
+
+    for (int i = 0; i < number_of_accounts; i++) {
+        temp.ccp_number = min_ccp_number + i;
+        temp.balance = randomIn(1000, 100000000);
+        fwrite(&temp, sizeof(CCP), 1, f);
+    }
+    rewind(f);
+    return f;
+}
+
+int search_ccp(FILE *file1, int ccp_number) {
+    if (file1) {
+        CCP temp;
+        int found = 0;
+        while (fread(&temp, sizeof(CCP), 1, file1) == 1) {
+            if (temp.ccp_number == ccp_number) {
+                found = 1;
+                break;
+            }
+        }
+        rewind(file1);
+        return found;
+    } else
+        return 0;
+}
+
+int search_transfer(FILE *file2, int ccp_number) {
+    if (file2) {
+        CCP temp;
+        int found = 0;
+
+        while (fscanf(file2, "%d %d", &temp.ccp_number, &temp.balance) == 2) {
+            if (temp.ccp_number == ccp_number) {
+                found = 1;
+                break;
+            }
+        }
+        rewind(file2);
+        return found;
+    } else {
+        return 0;
+    }
+}
+
+
+FILE* create_random_file2(char *file_name, int number_of_transfers, int min_ccp_number, int number_of_accounts) {
+    if (!file_name) return NULL;
+    FILE* f = fopen(file_name, "w+");
+    if (!f) return NULL;
+
+    int max_ccp = min_ccp_number + number_of_accounts - 1;
+    int transfers = number_of_transfers;
+
+    for (int i = 0; i < transfers; i++) {
+        int ccp = randomIn(min_ccp_number, max_ccp);
+        int amount = randomIn(10000, 1000000);
+        fprintf(f, "%d %d\n", ccp, amount);
+    }
+    fflush(f);
+    rewind(f);
+    return f;
+}
+
+
+void insert_account(FILE *file1, int ccp_number, int balance) {
+    if (!file1) return;
+    if (!search_ccp(file1, ccp_number)) {
+        CCP temp;
+        temp.ccp_number = ccp_number;
+        temp.balance = balance;
+        fseek(file1, 0, SEEK_END);
+        fwrite(&temp, sizeof(CCP), 1, file1);
+        fflush(file1);
+        rewind(file1);
+    }
+}
+
+void insert_transfer(FILE *file1, FILE *file2, int ccp_number, int balance) {
+    if (!file2 || !file1) return;
+    if (!search_transfer(file2, ccp_number)) {
+        // only insert transfer if the account exists in file1
+        if (search_ccp(file1, ccp_number)) {
+            fprintf(file2, "%d %d\n", ccp_number, balance);
+            fflush(file2);
+            rewind(file2);
+        }
+    }
+}
+
+/*
+ update:
+ For each transfer line in file2 (text), find matching account in binary file1,
+ add the transfer amount to the account balance and write it back.
+*/
+void update (FILE* file1, FILE* file2) {
+    if (!file1 || !file2) return;
+
+    rewind(file2);
+    int t_ccp, t_amount;
+    while (fscanf(file2, "%d %d", &t_ccp, &t_amount) == 2) {
+        // search in file1
+        CCP acc;
+        int found = 0;
+        rewind(file1);
+        while (fread(&acc, sizeof(CCP), 1, file1) == 1) {
+            if (acc.ccp_number == t_ccp) {
+                // update balance
+                acc.balance += t_amount;
+                // move back one record and overwrite
+                fseek(file1, -((long)sizeof(CCP)), SEEK_CUR);
+                fwrite(&acc, sizeof(CCP), 1, file1);
+                fflush(file1);
+                found = 1;
+                break;
+            }
+        }
+        // if not found, you may decide to insert a new account — currently we ignore missing accounts
+    }
+    rewind(file1);
+    rewind(file2);
+}
+
+int printfile_CCP (FILE *file1) {
+    if (file1) {
+        CCP temp;
+        rewind(file1);
+        while (fread(&temp, sizeof(CCP), 1, file1) == 1) {
+            printf("====================\n");
+            printf("CCP account number : %d || CCP account balance :  %d\n", temp.ccp_number, temp.balance);
+        }
+        rewind(file1);
+        return 1;
+    } else
+        return 0;
+}
+
+int printfile_transfers (FILE *file2) {
+    if (file2) {
+        CCP temp;
+        rewind(file2);
+        while (fscanf(file2,"%d %d",&temp.ccp_number,&temp.balance) == 2) {
+            printf("====================\n");
+            printf("CCP account number : %d || Transfer amount :  %d\n", temp.ccp_number, temp.balance);
+        }
+        rewind(file2);
+        return 1;
+    } else
+        return 0;
+}
+
+/* Top-level menu2: uses FILE* local vars and passes by address to submenus */
+void menu2 () {
+    FILE* file1=NULL,*file2=NULL;
+    char file1name[50], file1name_encoded[50], file1name_decoded[50];
+    char file2name[50], file2name_encoded[50], file2name_decoded[50];
+    int choice = -1;
+
+    do {
+        printf("\n  <===============  CCP balance management  ===============>\n");
+        printf("  |                 1. Create/Open file                    |\n");
+        printf("  |                 2. Print file                          |\n");
+        printf("  |                 3. Insert                              |\n");
+        printf("  |                 4. Update                              |\n");
+        printf("  |                 5. Encode/Decode file (not implemented) |\n");
+        printf("  |                 6. Back to main menu                   |\n");
+        printf("  ==========================================================\n");
+
+        printf ("\nEnter your choice:\n -->  ");
+        if (scanf("%d", &choice) != 1) {
+            int c; while ((c = getchar()) != EOF && c != '\n');
+            choice = -1;
+        }
+
+        switch (choice) {
+            case 1: menu2_1(&file1, &file2); break;
+            case 2: menu2_2(&file1, &file2); break;
+            case 3: menu2_3(&file1, &file2); break;
+            case 4: update(file1, file2); break;
+            case 5: printf("Encode/Decode not implemented for menu2.\n"); break;
+            case 6: printf("Returning to main menu...\n"); break;
+            default: printf("Invalid choice!\n"); break;
+        }
+        choice = -1;
+    } while (choice != 6);
+}
+
+void menu2_3 (FILE** file1, FILE** file2) {
+    int choice = -1, ccp_number=0, ccp_balance=0;
+
+    while (choice != 3) {
+        printf ("\n===========\n");
+        printf ("1. Insert in CCP accounts file\n");
+        printf ("2. Insert in transfers file\n");
+        printf ("3. Quit\n");
+        printf ("===============\n");
+        printf ("\nEnter your choice:\n -->  ");
+        if (scanf("%d", &choice) != 1) {
+            int c; while ((c = getchar()) != EOF && c != '\n');
+            choice = -1;
+        }
+        switch (choice) {
+            case 1:
+                if (!*file1) { printf("No CCP accounts file open. Use Create/Open file first.\n"); break; }
+                printf ("Enter CCP account number: \n--> ");
+                scanf ("%d", &ccp_number);
+                printf ("Enter CCP account balance: \n--> ");
+                scanf ("%d", &ccp_balance);
+                insert_account(*file1, ccp_number, ccp_balance);
+                break;
+            case 2:
+                if (!*file2) { printf("No transfers file open. Use Create/Open file first.\n"); break; }
+                printf ("Enter CCP account number: \n--> ");
+                scanf ("%d", &ccp_number);
+                printf ("Enter transfer amount: \n--> ");
+                scanf ("%d", &ccp_balance);
+                insert_transfer(*file1, *file2, ccp_number, ccp_balance);
+                break;
+            case 3:
+                printf("Returning...\n");
+                break;
+            default:
+                printf("Invalid choice!\n");
+                break;
+        }
+    }
+}
+
+void menu2_1(FILE **file1, FILE **file2) {
+    int choice=-1;
+    char filename1[260] = {0};
+    char filename2[260] = {0};
+
+    int number_of_accounts = 0; int min_ccp_number = 0; int number_of_transfers = 0;
+    do {
+        printf("\n ==>  Create/Open_file : \n");
+        printf("   1. Create Random files (accounts + transfers)\n");
+        printf("   2. Create Empty files\n");
+        printf("   3. Open existing files\n");
+        printf("   4. Quit\n");
+        printf("  ======\n");
+
+        printf ("\nEnter your choice:\n -->  ");
+        if (scanf("%d", &choice) != 1) {
+            int c; while ((c = getchar()) != EOF && c != '\n');
+            choice = -1;
+        }
+
+        switch (choice) {
+             case 1 :
+                printf("Enter the number of accounts : \n --> ");
+                scanf("%d", &number_of_accounts);
+                printf("Enter the minimum CCP number :\n --> ");
+                scanf("%d", &min_ccp_number);
+                printf("Enter the number of transfers :\n --> ");
+                scanf("%d", &number_of_transfers);
+                printf("Enter the file name of CCP accounts : \n --> ");
+                scanf("%259s", filename1);
+                printf("Enter the file name of CCP transfers : \n --> ");
+                scanf("%259s", filename2);
+
+                if (*file1) { fclose(*file1); *file1 = NULL; }
+                if (*file2) { fclose(*file2); *file2 = NULL; }
+
+                *file1 = create_random_file1(filename1, number_of_accounts, min_ccp_number);
+                *file2 = create_random_file2(filename2, number_of_transfers, min_ccp_number, number_of_accounts);
+                if (!*file1) printf("Failed to create CCP accounts file %s\n", filename1);
+                if (!*file2) printf("Failed to create transfers file %s\n", filename2);
+                break;
+
+            case 2 :
+                printf("Enter the file name of CCP accounts : \n --> ");
+                scanf("%259s", filename1);
+                if (*file1) { fclose(*file1); *file1 = NULL; }
+                *file1 = fopen(filename1, "wb+");
+                if (!*file1) printf("Failed to create/open %s\n", filename1);
+
+                printf("Enter the file name of CCP transfers : \n --> ");
+                scanf("%259s", filename2);
+                if (*file2) { fclose(*file2); *file2 = NULL; }
+                *file2 = fopen(filename2, "w+");
+                if (!*file2) printf("Failed to create/open %s\n", filename2);
+                break;
+
+            case 3 :
+                printf("Enter the file name of CCP accounts : \n --> ");
+                scanf("%259s", filename1);
+                if (*file1) { fclose(*file1); *file1 = NULL; }
+                *file1 = fopen(filename1, "r+b");
+                if (!*file1) {
+                    printf("File %s could not be opened\n", filename1);
+                    *file1 = NULL;
+                } else {
+                    printf("Enter the file name of CCP transfers\n --> ");
+                    scanf("%259s", filename2);
+                    if (*file2) { fclose(*file2); *file2 = NULL; }
+                    *file2 = fopen(filename2, "r+");
+                    if (!*file2) {
+                        printf("File %s could not be opened\n", filename2);
+                        *file2 = NULL;
+                    }
+                }
+                break;
+
+            case 4 :
+                printf("Returning...\n");
+                break;
+
+            default: printf("Invalid choice!\n"); break;
+        }
+
+    } while (choice != 4);
+}
+
+void menu2_2(FILE **file1, FILE **file2) {
+    int choice=-1;
+    do {
+        printf("\n ==>  Print file : \n");
+        printf("   1. CCP accounts file       \n");
+        printf("   2. Transfers file         \n");
+        printf("   3. Quit      \n");
+        printf("Enter your choice:\n -->  ");
+        if (scanf("%d", &choice) != 1) {
+            int c; while ((c = getchar()) != EOF && c != '\n');
+            choice = -1;
+        }
+        switch (choice) {
+            case 1 :
+                if (!*file1) { printf("No CCP accounts file open.\n"); break; }
+                printf ("========== CCP accounts file : ===============\n");
+                printfile_CCP (*file1);
+                break;
+            case 2 :
+                if (!*file2) { printf("No transfers file open.\n"); break; }
+                printf ("========== CCP transfers file : ===============\n");
+                printfile_transfers (*file2);
+                break;
+            case 3:
+                printf("Returning...\n");
+                break;
+            default: printf("Invalid choice!\n"); break;
+        }
+    } while (choice != 3);
+}
+
+
+
